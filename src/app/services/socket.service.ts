@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { io } from 'socket.io-client';
 import { Alliance } from '../models/alliance.model';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +33,7 @@ export class SocketService {
 
   createAlliance(name: string, pseudo: string): Promise<string> {
     return new Promise((resolve) => {
-      this.socket.emit('createAlliance', { name });
+      this.socket.emit('createAlliance', { name,pseudo });
 
       this.socket.once('allianceCreated', (alliance) => {
         this.alliance$.next(alliance);
@@ -119,11 +119,15 @@ joinAlliance(allianceId: string, pseudo: string): Promise<any> {
     });
   }
 
-  checkAllianceExists(allianceId: string): Promise<boolean> {
+  checkAllianceExists(allianceId: string): Promise<{exists:boolean,alliance:Alliance}> {
     return new Promise((resolve) => {
-      this.socket.emit("checkAlliance", allianceId, (exists: boolean) => {
-        resolve(exists);
-      });
+      this.socket.emit(
+        "checkAlliance",
+        allianceId,
+        ({ exists, alliance }: { exists: boolean; alliance: any }) => {
+          resolve({ exists, alliance });
+        }
+      );
     });
   }
   

@@ -17,6 +17,7 @@ import { SocketService } from '../../services/socket.service';
 export class AlliancesComponent implements OnInit {
   allianceId: string = '';
   attackList$ = new BehaviorSubject<Attack[]>([]);
+  alliance$ = new BehaviorSubject<any>(null);
   attackName = '';
   attackLocation = '';
   player$: any;
@@ -31,6 +32,7 @@ export class AlliancesComponent implements OnInit {
   ) {
     this.player$ = this.socketService.player$;
     this.attackList$ = this.socketService.attackList$;
+    this.alliance$ = this.socketService.alliance$; // ✅ Observer l'alliance créée
   }
 
   ngOnInit() {
@@ -40,13 +42,14 @@ export class AlliancesComponent implements OnInit {
       // Vérifier si l'alliance existe toujours
       const exists = this.socketService
         .checkAllianceExists(this.allianceId)
-        .then((value) => {
-          if (!value) {
+        .then((data) => {
+          if (!data.exists) {
             console.warn(`⚠️ Alliance ${this.allianceId} supprimée !`);
             localStorage.removeItem('allianceId');
             this.router.navigate(['/']); // Redirection vers la page d'accueil
             return;
           }
+          this.alliance$.next(data.alliance);
         });
 
       // 2. Reprendre la session utilisateur : récupération de playerId et pseudo depuis le stockage
