@@ -9,54 +9,43 @@ import { CommonModule } from '@angular/common';
   selector: 'app-home',
   imports: [FormsModule, CommonModule],
   template: `
-    <div class="container mx-auto p-4 text-center">
-      <h1 class="text-2xl font-bold">Bienvenue sur Datak</h1>
-
-      <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold">Créer une Alliance</h1>
-
-        <input
-          [(ngModel)]="allianceName"
-          placeholder="Nom de l'alliance"
-          class="border p-2"
-        />
+    <div
+      class="container h-screen flex flex-col items-center justify-center mx-auto p-4 text-center"
+    >
+      <div class="container mx-auto">
+        <h1 class="text-2xl text-white mb-5">Rejoignez votre équipe !</h1>
         <input
           [(ngModel)]="pseudo"
-          placeholder="Votre pseudo"
-          class="border p-2"
+          placeholder="Nom d'utilisateur"
+          class="w-[300px] border px-3 py-2 rounded-md bg-transparent placeholder-white text-white focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
         />
 
-        <button
-          (click)="createAlliance()"
-          class="bg-blue-500 text-white px-4 py-2"
-        >
-          Créer et Rejoindre
-        </button>
+        <hr class="w-[125px] mx-auto my-5" />
 
-        <h2 class="text-xl mt-4">Alliance créée</h2>
+        <!-- <h2 class="text-xl mt-4">Alliance créée</h2>
         <p *ngIf="alliance$ | async as alliance">
           🎉 Alliance <strong>{{ alliance.name }}</strong> créée avec ID:
           <strong>{{ alliance.id }}</strong>
-        </p>
+        </p> -->
       </div>
 
-      <div class="mt-6">
-        <h2 class="text-xl">Rejoindre une Alliance</h2>
+      <div class="flex flex-col">
+        <!-- <h2 class="text-xl">Rejoindre une Alliance</h2> -->
         <input
-          [(ngModel)]="allianceId"
-          placeholder="ID de l'alliance"
-          class="border p-2"
+          [(ngModel)]="allianceName"
+          placeholder="Créer votre alliance"
+          class="w-[300px] border px-3 py-2 rounded-md bg-transparent placeholder-white text-white focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
         />
         <input
-          [(ngModel)]="pseudo"
-          placeholder="Votre pseudo"
-          class="border p-2"
+          [(ngModel)]="allianceId"
+          placeholder="Rejoindre une alliance"
+          class="w-[300px] border px-3 py-2 my-3 rounded-md bg-transparent placeholder-white text-white focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
         />
         <button
           (click)="joinAlliance()"
-          class="bg-green-500 text-white px-4 py-2"
+          class="bg-[#FCC124] text-white w-[143px] px-4 py-2 mx-auto rounded-md mt-3 transition duration-300 ease-in-out hover:scale-105"
         >
-          Rejoindre
+          Se connecter
         </button>
       </div>
     </div>
@@ -103,9 +92,11 @@ export class HomeComponent {
   }
 
   joinAlliance() {
-    this.socketService.joinAlliance(this.allianceId, this.pseudo).then((value)=>{
-      this.router.navigate(['/alliance', this.allianceId]);
-    });
+    this.socketService
+      .joinAlliance(this.allianceId, this.pseudo)
+      .then((value) => {
+        this.router.navigate(['/alliance', this.allianceId]);
+      });
   }
 
   ngOnDestroy() {}
