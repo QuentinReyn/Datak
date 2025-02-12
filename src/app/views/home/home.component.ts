@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule,CommonModule],
+  imports: [FormsModule, CommonModule],
   template: `
     <div class="container mx-auto p-4 text-center">
       <h1 class="text-2xl font-bold">Bienvenue sur Dofus Attack Planner</h1>
@@ -77,7 +77,18 @@ export class HomeComponent {
   ngOnInit() {
     const storedAllianceId = localStorage.getItem('allianceId');
     if (storedAllianceId) {
-      this.router.navigate(['/alliance', storedAllianceId]);
+      const exists = this.socketService
+        .checkAllianceExists(this.allianceId)
+        .then((value) => {
+          if (!value) {
+            console.warn(`⚠️ Alliance ${this.allianceId} supprimée !`);
+            localStorage.removeItem('allianceId');
+            this.router.navigate(['/']); // Redirection vers la page d'accueil
+            return;
+          } else {
+            this.router.navigate(['/alliance', storedAllianceId]);
+          }
+        });
     }
   }
 
@@ -92,11 +103,10 @@ export class HomeComponent {
   }
 
   joinAlliance() {
-    this.socketService.joinAlliance(this.allianceId, this.pseudo);
-    this.router.navigate(['/alliance', this.allianceId]);
+    this.socketService.joinAlliance(this.allianceId, this.pseudo).then((value)=>{
+      this.router.navigate(['/alliance', this.allianceId]);
+    });
   }
 
-  ngOnDestroy(){
-   
-  }
+  ngOnDestroy() {}
 }

@@ -37,7 +37,7 @@ export class SocketService {
       this.socket.once('allianceCreated', (alliance) => {
         this.alliance$.next(alliance);
         console.log("Alliance créée:", alliance);
-        this.joinAlliance(alliance.id, pseudo);
+       // this.joinAlliance(alliance.id, pseudo);
         resolve(alliance.id); // ✅ On retourne l'ID pour la redirection
       });
     });
@@ -50,14 +50,26 @@ export class SocketService {
     });
   }
 
-  joinAlliance(allianceId: string, pseudo: string) {
-    this.socket.emit('joinAlliance', { allianceId, pseudo });
-    
-    // Enregistrer l'alliance et le joueur dans localStorage
-    localStorage.setItem('allianceId', allianceId);
-    localStorage.setItem('player', pseudo);
-  }
-
+ // services/socket.service.ts
+joinAlliance(allianceId: string, pseudo: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    // Vérifier si un playerId est déjà stocké
+    const storedPlayerId = localStorage.getItem("playerId");
+    // Émettre l'événement joinAlliance en incluant le playerId (s'il existe)
+    this.socket.emit("joinAlliance", { allianceId, pseudo, playerId: storedPlayerId });
+    // Une fois la réponse reçue du serveur
+    this.socket.once("joinedAlliance", (data) => {
+      if (data && data.player) {
+        // Si aucun playerId n'était stocké auparavant, sauvegarder celui du serveur
+        if (!storedPlayerId || storedPlayerId != data.player.id) {
+          localStorage.setItem("playerId", data.player.id);
+          localStorage.setItem("player", pseudo);
+        }
+      }
+      resolve(data);
+    });
+  });
+}
 
   getPlayerByPseudo(pseudo: string, allianceId: string): Promise<string | null> {
     return new Promise((resolve) => {
@@ -68,20 +80,20 @@ export class SocketService {
   }
 
   
-  createAttack(name: string, location: string, allianceId: string) {
-    this.socket.emit('createAttack', { name, location, allianceId });
+  createAttack(name: string, location: string, allianceId: string, playerId: string) {
+    this.socket.emit('createAttack', { name, location, allianceId, playerId });
   }
 
   deleteAttack(attackId: string, allianceId: string) {
     this.socket.emit('deleteAttack', { attackId, allianceId });
   }
 
-  joinAttack(attackId: string, allianceId: string) {
-    this.socket.emit('joinAttack', { attackId, allianceId });
+  joinAttack(attackId: string, allianceId: string, playerId: string) {
+    this.socket.emit('joinAttack', { attackId, allianceId, playerId });
   }
 
-  leaveAttack(allianceId: string) {
-    this.socket.emit('leaveAttack', { allianceId });
+  leaveAttack(allianceId: string, playerId: string) {
+    this.socket.emit('leaveAttack', { allianceId, playerId });
   }
 
   startAttack(attackId: string, allianceId: string) {

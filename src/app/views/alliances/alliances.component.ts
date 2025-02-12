@@ -49,27 +49,51 @@ export class AlliancesComponent implements OnInit {
           }
         });
 
-         // Récupération du pseudo depuis le storage
+      // 2. Reprendre la session utilisateur : récupération de playerId et pseudo depuis le stockage
+      this.playerId = localStorage.getItem('playerId') || '';
       this.pseudo = localStorage.getItem('player') || '';
-      if (this.pseudo) {
-        // Demander au serveur l'ID du joueur via son pseudo
-        this.socketService.getPlayerByPseudo(this.pseudo, this.allianceId).then((value)=>{
-          this.playerId = value!;
-        });
+
+      // Si le playerId n'existe pas, on le demande au serveur via le pseudo
+      if (!this.playerId && this.pseudo) {
+        this.socketService
+          .getPlayerByPseudo(this.pseudo, this.allianceId)
+          .then((value) => {
+            this.playerId = value!;
+            if (this.playerId) {
+              localStorage.setItem('playerId', this.playerId);
+            }
+          });
       }
 
-    //   // Si le joueur n'est pas trouvé, retour à l'accueil
-    //   if (!this.playerId) {
-    //     console.warn(`⚠️ Joueur "${this.pseudo}" introuvable, retour à l'accueil.`);
-    //     localStorage.removeItem("player");
-    //     this.router.navigate(['/']);
-    //     return;
-    //   }
+      // Si le playerId est toujours introuvable, on redirige vers l'accueil
+      if (!this.playerId) {
+        console.warn(
+          `⚠️ Joueur "${this.pseudo}" introuvable, retour à l'accueil.`
+        );
+        localStorage.removeItem('playerId');
+        localStorage.removeItem('player');
+        this.router.navigate(['/']);
+        return;
+      }
 
-     });
+      this.socketService.joinAlliance(this.allianceId, this.pseudo)
+      .then((response) => {
+        // Si c'est la première connexion, le serveur renverra le player créé,
+        // vous pouvez alors stocker le nouveau playerId pour les prochains refresh.
+        if (!this.playerId && response.player && response.player.id) {
+          this.playerId = response.player.id;
+          localStorage.setItem('playerId', this.playerId);
+        }
+        // Suite de la logique d'initialisation...
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la reconnexion :", error);
+        // En cas d'erreur, redirigez vers l'accueil par exemple.
+      });
+
+    });
 
     this.attackList$.subscribe((attacks) => {
-      console.log(attacks)
       attacks.forEach((attack) => {
         if (attack.status === 'ongoing' && !this.timers[attack.id]) {
           this.startTimer(attack);
@@ -106,7 +130,8 @@ export class AlliancesComponent implements OnInit {
     this.socketService.createAttack(
       this.attackName,
       this.attackLocation,
-      this.allianceId
+      this.allianceId,
+      localStorage.getItem('playerId')!
     );
   }
 
@@ -115,11 +140,12 @@ export class AlliancesComponent implements OnInit {
   }
 
   joinAttack(attackId: string) {
-    this.socketService.joinAttack(attackId, this.allianceId);
+    console.log(localStorage.getItem('playerId'))
+    this.socketService.joinAttack(attackId, this.allianceId, localStorage.getItem('playerId')!);
   }
 
   leaveAttack() {
-    this.socketService.leaveAttack(this.allianceId);
+    this.socketService.leaveAttack(this.allianceId, localStorage.getItem('playerId')!);
   }
 
   ngOnDestroy() {
@@ -129,7 +155,7 @@ export class AlliancesComponent implements OnInit {
 
   private handleLeaveGame = () => {
     if (this.playerId && this.allianceId) {
-      this.socketService.leaveGame(this.playerId, this.allianceId);
+      this.socketService.leaveGame(localStorage.getItem('playerId')!, this.allianceId);
     }
   };
 }
