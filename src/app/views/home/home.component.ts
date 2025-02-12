@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   imports: [FormsModule, CommonModule],
   template: `
     <div class="container mx-auto p-4 text-center">
-      <h1 class="text-2xl font-bold">Bienvenue sur Dofus Attack Planner</h1>
+      <h1 class="text-2xl font-bold">Bienvenue sur Datak</h1>
 
       <div class="container mx-auto p-4">
         <h1 class="text-2xl font-bold">Créer une Alliance</h1>

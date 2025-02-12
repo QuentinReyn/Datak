@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { io } from 'socket.io-client';
 import { Alliance } from '../models/alliance.model';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SocketService {
-  private socket = io('http://localhost:3000');
+  private socket = io(environment.API_ENDPOINT);
 
   public attackList$ = new BehaviorSubject<any[]>([]);
   public player$ = new BehaviorSubject<any>(null);
