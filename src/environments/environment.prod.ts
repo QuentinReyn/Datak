@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  API_ENDPOINT:"https://datak-server.vercel.app"
+  API_ENDPOINT:"https://datak-server.onrender.com"
 };
